@@ -7,32 +7,24 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/", indexHandler)
-	http.HandleFunc("/hello", helloHandler)
-	log.Fatalln(http.ListenAndServe(":9999", nil))
+	engine := new(Engine)
+	log.Fatalln(http.ListenAndServe(":9999", engine))
 }
 
 type Engine struct {
 }
 
-func (engine *Engine) ServeHttp(w http.ResponseWriter, req *http.Request) {
+func (engine *Engine) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	switch req.URL.Path {
 	case "/":
-
-	}
-}
-func helloHandler(writer http.ResponseWriter, request *http.Request) {
-	for k, v := range request.Header {
-		_, err := fmt.Fprintf(writer, "Header[%q]=%q\n", k, v)
-		if err != nil {
+		if _, err := fmt.Fprintf(w, "Url.path=%q\n", req.URL.Path); err != nil {
 			return
 		}
-	}
-}
-
-func indexHandler(writer http.ResponseWriter, request *http.Request) {
-	_, err := fmt.Fprintf(writer, "Url.path=%q\n", request.URL.Path)
-	if err != nil {
-		return
+	case "hello":
+		for k, v := range req.Header {
+			fmt.Fprintf(w, "Header[%q] = %q\n", k, v)
+		}
+	default:
+		fmt.Fprintf(w, "404 NOT FOUND: %s\n", req.URL)
 	}
 }
